@@ -2,12 +2,18 @@ from internals.scanner import Scanner
 from internals.parser import Parser
 from internals.ast.ast_printer import AstPrinter
 
-sx = Scanner("""var a = (123 + 321) * 456; /* Blah */
+s = Scanner("""
+function pow(n) {
+    return n ** 2;
+}
+                        
+var a = (123 + 321) * 456; /* Blah */
 var b = a / 10; //* Test
 var c = 'test';
+var d = pow(a);
 """)
 
-s = Scanner("var x = 1;")
+sx = Scanner("var x = 1;")
 s.scan()
 
 # print(*s.tokens, sep = '\n')
@@ -18,4 +24,6 @@ stmts = p.parse()
 
 ast = AstPrinter()
 
-print(ast.processStatement(stmts[0]))
+for stmt in stmts:
+    print(ast.processStatement(stmt))
+    
