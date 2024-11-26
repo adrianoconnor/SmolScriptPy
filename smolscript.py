@@ -31,8 +31,9 @@ var some_number = demo_func(-2, 10);
 #prg = c.Compile("var x = 1; x = x + 1;")
 #print(prg.decompile())
 
-vm = SmolVM.Init("var a = 10 * 3 + 4;")
+vm = SmolVM.Init("""var a = 10 * (3 + 4);""")
 
-vm.run()
+print(vm.runMode)
 
 print(vm.globalEnv._variables)
+print(vm.globalEnv._variables["a"].value)

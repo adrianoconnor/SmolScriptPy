@@ -125,7 +125,7 @@ class SmolVM():
         i = 0
         while (i < numberOfPassedArgs):
             value = self.stack.pop()
-            methodArgs.push(value.getValue())
+            methodArgs.append(value.getValue())
             i += 1
 
         # returnValue = self.externalMethods[methodName].apply(None, methodArgs)
@@ -180,7 +180,7 @@ class SmolVM():
             
             i += 1
 
-        self.stack.push(state)
+        self.stack.append(state)
 
         self.pc = 0
         self.code_section = fn.code_section
@@ -231,32 +231,31 @@ class SmolVM():
 
             self.pc += 1
 
+            print (instr)
+
             try:
                 match (instr.opcode):
                 
                     case OpCode.NOP:
-                        break
+                        True
                      
                     case OpCode.START:
                         # Just skip over this instruction, no-op
-                        break
+                        True
 
                     case OpCode.CONST:
                         # Load a value from the data section at specified index
                         # and place it on the stack
-                        self.stack.push(self.program.constants[instr.operand1])
-                        
-                        break
-
+                        self.stack.append(self.program.constants[instr.operand1])
+        
                     case OpCode.CALL:
                         
                         callData = self.stack.pop()
 
                         if (isinstance(callData, SmolNativeFunctionResult)):
-                        
+                            raise RuntimeWarning() # https://stackoverflow.com/questions/72273235/how-to-break-the-match-case-but-not-the-while-loop
                             # Everything was handled by the previous Fetch instruction, which made a native
                             # call and left the result on the stack.
-                            break
 
                         # First create the env for our function
 
@@ -278,7 +277,7 @@ class SmolVM():
 
                         i = 0
                         while (i < instr.operand1):
-                            paramValues.push(self.stack.pop())
+                            paramValues.append(self.stack.pop())
                             i += 1
 
                         # Now prime the environment with variables for
@@ -306,166 +305,119 @@ class SmolVM():
 
                         self.environment = env
 
-                        self.stack.push(state)
+                        self.stack.append(state)
 
                         # Finally set our PC to the start of the function we're about to execute
 
                         self.pc = 0
                         self.code_section = callData.code_section
-
-                        break
-                        
-
+                    
                     case OpCode.ADD:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
                         if (isinstance(left, SmolNumber) and isinstance(right, SmolNumber)):
-                            self.stack.push(SmolNumber(left.getValue() + right.getValue()))
+                            self.stack.append(SmolNumber(left.getValue() + right.getValue()))
                         else :
-                            self.stack.push(SmolString(left.getValue().toString() + right.getValue().toString()))
-                        
-                        break
+                            self.stack.append(SmolString(left.getValue().toString() + right.getValue().toString()))
                         
                     case OpCode.SUB:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() - right.getValue()))
-
-                        break
-                        
+                        self.stack.append(SmolNumber(left.getValue() - right.getValue()))
 
                     case OpCode.MUL:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() * right.getValue()))
-
-                        break
-                        
+                        self.stack.append(SmolNumber(left.getValue() * right.getValue()))
 
                     case OpCode.DIV:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() / right.getValue()))
-
-                        break
-                    
+                        self.stack.append(SmolNumber(left.getValue() / right.getValue()))
 
                     case OpCode.REM:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() % right.getValue()))
-
-                        break
-                        
+                        self.stack.append(SmolNumber(left.getValue() % right.getValue()))
 
                     case OpCode.POW:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() ** right.getValue()))
-
-                        break
-                        
-
+                        self.stack.append(SmolNumber(left.getValue() ** right.getValue()))
 
                     case OpCode.EQL:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolBool(left.equals(right)))
-
-                        break
-                        
+                        self.stack.append(SmolBool(left.equals(right)))
 
                     case OpCode.NEQ:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolBool(not left.equals(right)))
-
-                        break
-                        
+                        self.stack.append(SmolBool(not left.equals(right)))
 
                     case OpCode.GT:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolBool(left.getValue() > right.getValue()))
-
-                        break
-                    
+                        self.stack.append(SmolBool(left.getValue() > right.getValue()))
 
                     case OpCode.LT:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolBool(left.getValue() < right.getValue()))
-
-                        break
-                        
+                        self.stack.append(SmolBool(left.getValue() < right.getValue()))
 
                     case OpCode.GTE:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolBool(left.getValue() >= right.getValue()))
-
-                        break
-                    
+                        self.stack.append(SmolBool(left.getValue() >= right.getValue()))
 
                     case OpCode.LTE:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolBool(left.getValue() <= right.getValue()))
-
-                        break
-                        
+                        self.stack.append(SmolBool(left.getValue() <= right.getValue()))
 
                     case OpCode.BITWISE_OR:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() | right.getValue()))
-
-                        break
-                    
+                        self.stack.append(SmolNumber(left.getValue() | right.getValue()))
 
                     case OpCode.BITWISE_AND:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.push(SmolNumber(left.getValue() & right.getValue()))
-
-                        break
-                        
+                        self.stack.append(SmolNumber(left.getValue() & right.getValue()))
 
                     case OpCode.EOF:
                         
                         #console.log(`Done, stack size = $self.stack.__len__(), consumed cycles = $consumedCycles`)
                         self.runMode = RunMode.Done
                         self.pc -= 1
-                        return
-                        
 
                     case OpCode.RETURN:
                         
@@ -490,7 +442,7 @@ class SmolVM():
                         self.code_section = savedCallState.code_section
 
                         # Return value needs to go back on the stack
-                        self.stack.push(SmolUndefined() if return_value == None else return_value)
+                        self.stack.append(SmolUndefined() if return_value == None else return_value)
 
                         if (savedCallState.call_is_extern):
                         
@@ -502,12 +454,9 @@ class SmolVM():
                         if (self.runMode == RunMode.Step):    
                             self.runMode = RunMode.Paused
                             return
-                    
-                        break
                         
                     case OpCode.DECLARE:
                         self.environment.define(str(instr.operand1), SmolUndefined())
-                        break
 
                     case OpCode.STORE:
                     
@@ -582,7 +531,7 @@ class SmolVM():
                                 env_in_context = (objRef).object_env
 
                                 if (peek_instr.opcode == OpCode.CALL and bool(peek_instr.operand2)):
-                                    self.stack.push(objRef)
+                                    self.stack.append(objRef)
                             else:
                                                             
                                 if (isinstance(objRef, ISmolNativeCallable)):
@@ -597,17 +546,17 @@ class SmolVM():
 
                                         i = 0
                                         while (i < int(peek_instr.operand1)):
-                                            paramValues.push(self.stack.pop())
+                                            paramValues.append(self.stack.pop())
                                             i += 1
                                         
-                                        self.stack.push((objRef).nativeCall(name, paramValues))
-                                        self.stack.push(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
+                                        self.stack.append((objRef).nativeCall(name, paramValues))
+                                        self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
                                     
                                     else:
                                     
                                         # For now won't work with Setter
 
-                                        self.stack.push((objRef).getProp(name))
+                                        self.stack.append((objRef).getProp(name))
                                     
 
                                     break
@@ -636,11 +585,11 @@ class SmolVM():
                                         if (name != "@Object.constructor"):                                            
                                             i = 0
                                             while (i < int(peek_instr.operand1)):
-                                                functionArgs.push(self.stack.pop())
+                                                functionArgs.append(self.stack.pop())
                                                 i += 1
 
                                             #if (int(peek_instr.operand1) > 0):                                                
-                                                #parameters.push(functionArgs)
+                                                #parameters.append(functionArgs)
                                             
                                         # Now we've got rid of the params we can get rid
                                         # of the dummy object that create_object left
@@ -657,11 +606,11 @@ class SmolVM():
                                             (r).object_env = ScopeEnvironment(self.globalEnv)
                                         
 
-                                        self.stack.push(r)
+                                        self.stack.append(r)
 
                                         # And now fill in some fake object refs again:
-                                        self.stack.push(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
-                                        self.stack.push(SmolNativeFunctionResult()) # Pop and Discard following Call will discard this
+                                        self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
+                                        self.stack.append(SmolNativeFunctionResult()) # Pop and Discard following Call will discard this
 
                                         break
                                 else:
@@ -674,7 +623,7 @@ class SmolVM():
                         
                         if (fetchedValue != None):
                         
-                            self.stack.push(fetchedValue)
+                            self.stack.append(fetchedValue)
 
                         else:
                         
@@ -685,18 +634,16 @@ class SmolVM():
                                     break
                             
                             if (fn != None):
-                                self.stack.push(fn)
+                                self.stack.append(fn)
                             
                             elif (self.externalMethods[name] != None):
                                 peek_instr = self.program.code_sections[self.code_section][self.pc]
 
-                                self.stack.push(self.callExternalMethod(name, peek_instr.operand1))
+                                self.stack.append(self.callExternalMethod(name, peek_instr.operand1))
 
-                                self.stack.push(SmolNativeFunctionResult())
+                                self.stack.append(SmolNativeFunctionResult())
                             else:
-                                self.stack.push(SmolUndefined())
-                            
-                        break
+                                self.stack.append(SmolUndefined())
 
                     case OpCode.JMPFALSE:
                         
@@ -704,8 +651,6 @@ class SmolVM():
 
                         if (value.getValue() == False): # .isFalsey())
                             self.pc = self.jmplocs[instr.operand1]
-
-                        break
                         
                     case OpCode.JMPTRUE:
                     
@@ -715,27 +660,21 @@ class SmolVM():
                         if (value.getValue() == True): # .isFalsey())
                             self.pc = self.jmplocs[instr.operand1]
 
-                        break
-                    
-
                     case OpCode.JMP:
                         self.pc = self.jmplocs[instr.operand1]
-                        break
 
                     case OpCode.LABEL:
                         # Just skip over this instruction, it's only here
                         # to support branching
-                        break
+                        True
 
                     case OpCode.ENTER_SCOPE:
                         
                         self.environment = ScopeEnvironment(self.environment)
-                        break
                         
                     case OpCode.LEAVE_SCOPE:
                     
                         self.environment = self.environment.enclosing
-                        break
 
                     case OpCode.DEBUGGER:
                         
@@ -743,16 +682,12 @@ class SmolVM():
                             # Don't break if we're starting from a prevoiusly hit break point
                             self.runMode = RunMode.Paused
                             return
-
-                        break
                         
                     case OpCode.POP_AND_DISCARD:
                         # operand1 is optional bool, default true means fail if nothing to pop
                         if (self.stack.__len__() > 0 or instr.operand1 == None or bool(instr.operand1)):
                         
                             self.stack.pop()
-                        
-                        break
 
                     case OpCode.TRY:
 
@@ -767,7 +702,7 @@ class SmolVM():
                             exception = self.stack.pop()
                         
 
-                        self.stack.push(SmolTryRegionSaveState(
+                        self.stack.append(SmolTryRegionSaveState(
                                 self.code_section,
                                 self.pc,
                                 self.environment,
@@ -776,9 +711,7 @@ class SmolVM():
                         )
 
                         if (exception != None):
-                            self.stack.push(exception)
-
-                        break
+                            self.stack.append(exception)
 
                     case OpCode.THROW:
                                             
@@ -786,14 +719,11 @@ class SmolVM():
                         
                     case OpCode.LOOP_START:
 
-                        self.stack.push(SmolLoopMarker(self.environment))
-
-                        break
+                        self.stack.append(SmolLoopMarker(self.environment))
 
                     case OpCode.LOOP_END:
 
                         self.stack.pop()
-                        break
 
                     case OpCode.LOOP_EXIT:
 
@@ -805,17 +735,12 @@ class SmolVM():
                             
                                 self.environment = (next).current_env
 
-                                self.stack.push(next) # Needs to still be on the stack
+                                self.stack.append(next) # Needs to still be on the stack
 
                                 if (instr.operand1 != None):
                                     self.pc = self.jmplocs[instr.operand1]
                                 
-
                                 break
-                            
-                        
-
-                        break
 
                     case OpCode.CREATE_OBJECT:
                         
@@ -828,8 +753,9 @@ class SmolVM():
                         class_name = str(instr.operand1)
 
                         if (self.staticTypes[class_name] != None):                        
-                            self.stack.push(SmolNativeFunctionResult())
+                            self.stack.append(SmolNativeFunctionResult())
                             break
+                            ###### TODO: https://stackoverflow.com/questions/72273235/how-to-break-the-match-case-but-not-the-while-loop
                         
                         obj_environment = ScopeEnvironment(self.globalEnv)
                         
@@ -847,12 +773,9 @@ class SmolVM():
                                     fn.param_variable_names
                                 ))                        
 
-                        self.stack.push(SmolObject(obj_environment, class_name))
+                        self.stack.append(SmolObject(obj_environment, class_name))
 
                         obj_environment.define("this", self.stack.peek())
-
-                        break
-                    
 
                     case OpCode.DUPLICATE_VALUE:
                     
@@ -860,9 +783,7 @@ class SmolVM():
 
                         itemToDuplicate = self.stack[self.stack.__len__() - 1 - skip]
 
-                        self.stack.push(itemToDuplicate)
-
-                        break
+                        self.stack.append(itemToDuplicate)
                                             
                     case default:
                         raise RuntimeError(f"You forgot to handle an opcode: {instr.opcode}")
@@ -870,7 +791,7 @@ class SmolVM():
             except Exception as e:
                 
                 handled = False
-                throwObject:SmolVariable = SmolError(e.message)
+                throwObject:SmolVariable = SmolError(e)
                 
                 if (isinstance(e, SmolThrownFromInstruction)): 
                     thrownObject = self.stack.pop()
@@ -891,7 +812,7 @@ class SmolVM():
                         self.pc = tryState.jump_exception
                         self.environment = tryState.this_env
 
-                        self.stack.push(throwObject)
+                        self.stack.append(throwObject)
 
                         handled = True
                         break
