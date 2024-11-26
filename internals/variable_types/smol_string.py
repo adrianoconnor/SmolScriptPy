@@ -10,3 +10,6 @@ class SmolString(SmolVariable):
 
     def __str__(self) -> str:
         return f"(String) {self.value}"
+
+    def getValue(self) -> str:
+        return self.value

@@ -41,7 +41,7 @@ from .token import Token
 
 class Parser():
 
-    tokens:list[Token]
+    tokens:list[Token] = []
     current:int = 0
 
     def __init__(self, tokens):
@@ -58,14 +58,12 @@ class Parser():
             else:
                 statements.append(self.declaration())
 
-        print(statements)
-
         return statements
 
-    def reachedEnd(self, skip = 0) -> bool:
+    def reachedEnd(self, skip:int = 0) -> bool:
         return self.peek().type == TokenType.EOF
     
-    def peek(self, skip = 0) -> Token:
+    def peek(self, skip:int = 0) -> Token:
         return self.tokens[self.current + skip]
 
     def check(self, tokenType, skip = 0) -> bool:

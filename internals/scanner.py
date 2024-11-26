@@ -45,6 +45,10 @@ class Scanner:
 
     def __init__(self, source:str):
         self.source = source
+
+    @staticmethod
+    def tokenize(source:str) -> list[Token]:
+        return Scanner(source).scan()
     
     def scan(self):
         while(self.reachedEnd() == False):
