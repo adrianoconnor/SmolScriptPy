@@ -1,0 +1,1 @@
+mypy smolscript.py --check-untyped-defs
