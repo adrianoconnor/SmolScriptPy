@@ -16,13 +16,30 @@ function demo_func(start, end) {
 var some_number = demo_func(-2, 10);
 """
 
-#sx = Scanner("var x = 1;")
-#s.scan()
+scanner = Scanner("var x = 1; for(var a = 0; a < 10; a++) { x += a; }")
+scanner.scan()
+parser = Parser(scanner.tokens)
+statements = parser.parse()
+ast = AstPrinter()
+for stmt in statements:
+    print(ast.processStatement(stmt))
 
-# print(*s.tokens, sep = '\n')
+#compiler = Compiler()
+#prg = compiler.Compile("var x = 1; for(var a = 0; a < 10; a++) { x += a; }")
+#print(prg.decompile())
 
-#p = Parser(s.tokens)
-#stmts = p.parse()
+vm = SmolVM.Init("var a = 1; for(var i = 0; i <= 10; i++) { a = a + 1; }")
+
+print(vm.program.decompile())
+
+print(vm.globalEnv._variables)
+print(vm.globalEnv._variables["a"].value)
+
+exit(0)
+
+
+p = Parser(sx.tokens)
+stmts = p.parse()
 #ast = AstPrinter()
 #for stmt in stmts:
 #    print(ast.processStatement(stmt))

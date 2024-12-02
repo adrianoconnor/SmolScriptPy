@@ -307,7 +307,7 @@ class Compiler:
         thenChunk = stmt.thenStatement.accept(self)
         
         if (isinstance(list, thenChunk)):
-            thenChunk.mapTokens(stmt.thenFirstTokenIndex, stmt.thenLastTokenIndex)
+            #thenChunk.mapTokens(stmt.thenFirstTokenIndex, stmt.thenLastTokenIndex)
             if (isinstance(stmt.thenStatement, BlockStatement)): # .getStatementType() != "Block"):
                 thenChunk[0].isStatementStartpoint = True
           
@@ -497,7 +497,7 @@ class Compiler:
         Compiler.appendInstruction(chunk, OpCode.JMPFALSE, endOfLoop)
 
         stmtChunk = stmt.executeStatement.accept(self)
-        stmtChunk.mapTokens(stmt.stmtFirstTokenIndex, stmt.stmtLastTokenIndex)
+        #stmtChunk.mapTokens(stmt.stmtFirstTokenIndex, stmt.stmtLastTokenIndex)
         Compiler.appendChunk(chunk, stmtChunk)
 
         Compiler.appendInstruction(chunk, OpCode.JMP, startOfLoop)

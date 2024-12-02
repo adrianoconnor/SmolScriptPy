@@ -44,6 +44,13 @@ class Scanner:
     source:str = ""
 
     def __init__(self, source:str):
+        self.tokens = []
+        self.startOfToken = 0
+        self.currentPos = 0
+        self.currentLine = 0
+        self.currentLineStartIndex = 0
+        self.previous = 0
+
         self.source = source
 
     @staticmethod
@@ -119,15 +126,25 @@ class Scanner:
                 self.addToken(TokenType.SEMICOLON)
 
             case "-":
-                # TODO: --
-                if (self.matchNext("=")):
+                if (self.matchNext('-')):
+                    if (self.tokens.__len__() > 0 and self.tokens[self.tokens.__len__() - 1].type == TokenType.IDENTIFIER
+                        and self.tokens[self.tokens.__len__() - 1].isFollowedByLineBreak == False):
+                        self.addToken(TokenType.POSTFIX_DECREMENT)
+                    else:
+                        self.addToken(TokenType.PREFIX_DECREMENT)
+                elif (self.matchNext("=")):
                     self.addToken(TokenType.MINUS_EQUALS)
                 else:
                     self.addToken(TokenType.MINUS)
 
             case "+":
-                # TODO: "++"
-                if (self.matchNext("=")):
+                if (self.matchNext('+')):
+                    if (self.tokens.__len__() > 0 and self.tokens[self.tokens.__len__() - 1].type == TokenType.IDENTIFIER
+                        and self.tokens[self.tokens.__len__() - 1].isFollowedByLineBreak == False):
+                        self.addToken(TokenType.POSTFIX_INCREMENT)
+                    else:
+                        self.addToken(TokenType.PREFIX_INCREMENT)
+                elif (self.matchNext("=")):
                     self.addToken(TokenType.PLUS_EQUALS)
                 else:
                     self.addToken(TokenType.PLUS)

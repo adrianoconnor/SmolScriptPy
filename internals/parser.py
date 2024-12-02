@@ -76,7 +76,8 @@ class Parser():
         for tokenType in tokenTypes:
             if (self.check(tokenType)):
                 self.advance()
-                return True        
+                #print(f"matched token type '{tokenType}'")
+                return True
         return False
 
     def consume(self, tokenType, errorMessageIfNotFound) -> Token:
@@ -244,6 +245,7 @@ class Parser():
 
         return WhileStatement(expr, stmt)
 
+
     def block(self) -> BlockStatement:
     
         stmts:list[Statement] = []
@@ -367,8 +369,21 @@ class Parser():
             return whileStmt
 
     def expressionStatement(self) -> ExpressionStatement:
+                
+        firstTokenIndex = self.current
+
+        expr:Expression = self.expression()
+
+        skip = 1 if self.consume(TokenType.SEMICOLON, "Expected ;").startPos == -1 else 2
         
-        return ExpressionStatement(self.expression())
+        lastTokenIndex = self.current - skip
+
+        stmt = ExpressionStatement(expr)
+
+        #stmt.firstTokenIndex = firstTokenIndex;
+        #stmt.lastTokenIndex = lastTokenIndex;
+
+        return stmt
 
     #######################
 
@@ -415,8 +430,7 @@ class Parser():
         if (self.match(TokenType.POW_EQUALS)):
             return self.compoundAssignmentExpressionHelper(TokenType.POW, "**=", expr)
 
-        return expr
-    
+        return expr    
 
     def compoundAssignmentExpressionHelper(self, tokenForExpression:TokenType, literalForExpression:str, expr:Expression) -> Expression:
 

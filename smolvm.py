@@ -42,7 +42,7 @@ class SmolVM():
     pc:int = 0
     runMode = RunMode.Paused
     stack:list[SmolStackType] = []
-    jmplocs:list[int] = []
+    jmplocs:Dict[int, int] = {} #list[int] = []
     maxStackSize:int = -1
     maxCycles:int = -1
 
@@ -105,6 +105,8 @@ class SmolVM():
                 j += 1
             
             i+= 1
+        
+        print (f"jmplocs: {self.jmplocs}")
                 
     
 
