@@ -6,11 +6,7 @@ from smolvm import SmolVM
 
 def test_parser_simple_example():
 
-    scanner = Scanner("var x = 1; for(var a = 0; a < 10; a++) { x += a; }")
-    scanner.scan()
-    parser = Parser(scanner.tokens)
-    statements = parser.parse()
+    vm = SmolVM.Init("var x = 1; for(var a = 1; a <= 2; a++) { x += a; }")
 
-    assert statements.__len__() == 2
-
+    assert vm.environment._variables["x"].value == 4
 

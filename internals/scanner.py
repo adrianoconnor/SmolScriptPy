@@ -71,7 +71,7 @@ class Scanner:
         self.currentPos += 1
         return c
     
-    def peek(self, peekAheadChars:int = 0):
+    def peek(self, peekAheadChars:int = 0) -> str:
         if (self.reachedEnd()):
             return '\0'
 

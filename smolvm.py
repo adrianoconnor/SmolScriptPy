@@ -464,9 +464,6 @@ class SmolVM():
                     
                         name = str(instr.operand1)
 
-                        #console.log(name)
-                        #console.log(self.stack)
-
                         if (name == "@IndexerSet"):
                         
                             # Special case for square brackets!
@@ -494,15 +491,11 @@ class SmolVM():
                             elif (isinstance(objRef, ISmolNativeCallable)):
                             
                                 (objRef).setProp(name, value)
-                                break
                             
                             else:                            
                                 raise RuntimeError(f"$objRef is not a valid target for this call")
                             
-                        env_in_context.assign(name, value, isPropertySetter)
-
-                        break
-                    
+                        env_in_context.assign(name, value, isPropertySetter)                    
 
                     case OpCode.FETCH:
                         
@@ -560,8 +553,6 @@ class SmolVM():
 
                                         self.stack.append((objRef).getProp(name))
                                     
-
-                                    break
                                 
                                 elif (isinstance(objRef, SmolNativeFunctionResult)):
                                                                                                             
@@ -614,7 +605,6 @@ class SmolVM():
                                         self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
                                         self.stack.append(SmolNativeFunctionResult()) # Pop and Discard following Call will discard this
 
-                                        break
                                 else:
                                     raise RuntimeError(f"{objRef} is not a valid target for this call")
                                 

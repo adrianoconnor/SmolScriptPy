@@ -12,12 +12,14 @@ class ScopeEnvironment():
         self.enclosing = enclosing
 
     def define(self, name:str, value:SmolVariable) -> None:
+        #print(f"Define -- name: {name}, value: {value}")
         self._variables[name] = value
 
     def assign(self, name:str, value:SmolVariable, isThis:bool = False) -> None:
-        if (self._variables[name] != None):
+        #print(f"Assign -- name: {name}, value: {value}")
+        if (self._variables.__contains__(name)):
             self._variables[name] = value
-        elif (self.isThis):
+        elif (isThis):
             self.define(name, value)
         elif (self.enclosing != None):
             self.enclosing.assign(name, value)
@@ -25,7 +27,7 @@ class ScopeEnvironment():
             raise RuntimeError("Variable undefined")
 
     def get(self, name:str) ->  SmolVariable:
-        if (self._variables[name] != None):
+        if (self._variables.__contains__(name)):
             return self._variables[name]
         elif (self.enclosing != None):
             return self.enclosing.get(name)
@@ -33,7 +35,7 @@ class ScopeEnvironment():
             raise RuntimeError("Variable undefined")
 
     def tryGet(self, name:str) -> Optional[SmolVariable]:
-        if (self._variables[name] != None):
+        if (self._variables.__contains__(name)):
             return self._variables[name]
         elif (self.enclosing != None):
             return self.enclosing.tryGet(name)
