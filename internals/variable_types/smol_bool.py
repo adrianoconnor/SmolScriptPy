@@ -1,12 +1,9 @@
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 
-class SmolBool(SmolVariable):
-
-    value:bool
+class SmolBool(SmolVariableType):
 
     def __init__(self, value:bool):
-        super().__init__()
-        self.value = value
+        self.value:bool = value
 
     def __str__(self) -> str:
         return f"(Bool) {self.value}"

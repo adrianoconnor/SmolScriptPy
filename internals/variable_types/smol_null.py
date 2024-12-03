@@ -1,7 +1,7 @@
 from typing import Any
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 
-class SmolNull(SmolVariable):
+class SmolNull(SmolVariableType):
     
     def __init__(self):
         super().__init__()

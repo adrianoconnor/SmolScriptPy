@@ -5,13 +5,9 @@ from .expression import Expression
 
 class VariableExpression(Expression):
 
-    name:Token
-    prepostfixOp:Optional[TokenType]
-
     def __init__(self, name:Token, prepostfixOp:Optional[TokenType] = None):
-        super().__init__()
-        self.name = name
-        self.prepostfixOp = prepostfixOp
+        self.name:Token = name
+        self.prepostfixOp:Optional[TokenType] = prepostfixOp
 
     def accept(self, visitor):
         return visitor.visitVariableExpression(self)

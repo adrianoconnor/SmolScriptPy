@@ -2,16 +2,17 @@ from typing import Optional
 from internals.bytecode_instruction import ByteCodeInstruction
 from internals.opcodes import OpCode
 from internals.variable_types.smol_function import SmolFunction
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 from internals.token import Token
 
 class SmolProgram:
 
-    constants:list[SmolVariable] = []
-    code_sections:list[list[ByteCodeInstruction]] = []
-    function_table:list[SmolFunction] = []
-    tokens:list[Token] = []
-    source:Optional[str] = None
+    def __init__(self):
+        self.constants:list[SmolVariableType] = []
+        self.code_sections:list[list[ByteCodeInstruction]] = []
+        self.function_table:list[SmolFunction] = []
+        self.tokens:list[Token] = []
+        self.source:Optional[str] = None
 
     def decompile(self, html:bool = False) -> str:
         p = ''

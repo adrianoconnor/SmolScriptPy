@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Dict, Optional
 from internals.scope_environment import ScopeEnvironment
 from internals.smol_program import SmolProgram
@@ -12,12 +13,11 @@ from internals.variable_types.smol_function import SmolFunction
 from internals.variable_types.smol_native_callable import ISmolNativeCallable
 from internals.variable_types.smol_object import SmolObject
 from internals.stack_types.smol_stack_type import SmolStackType
-from enum import Enum
 from internals.variable_types.smol_bool import SmolBool
 from internals.variable_types.smol_string import SmolString
 from internals.variable_types.smol_undefined import SmolUndefined
 from internals.variable_types.smol_number import SmolNumber
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 from internals.stack_types.smol_stack_type import SmolStackType
 from internals.variable_types.smol_variable_creator import SmolVariableCreator
 
@@ -35,29 +35,26 @@ class SmolThrownFromInstruction(BaseException):
     def __init__(self, *args):
         super().__init__(*args)
 
-class SmolVM():
-
-    program:SmolProgram
-    code_section:int = 0
-    pc:int = 0
-    runMode = RunMode.Paused
-    stack:list[SmolStackType] = []
-    jmplocs:Dict[int, int] = {} #list[int] = []
-    maxStackSize:int = -1
-    maxCycles:int = -1
-
-    globalEnv:ScopeEnvironment = ScopeEnvironment()
-    environment:ScopeEnvironment
-    staticTypes:Dict[str, Any] = {} 
-    #externalMethods:Dict[str, Function] = {} 
-
-    #classMethodRegEx = RegularExpression("@([A-Za-z]+)[.]([A-Za-z]+)")
+class SmolRuntime():
 
     def __init__(self, source:str):
-        
-        compiler = Compiler()
 
-        self.program = compiler.Compile(source)
+        self.code_section:int = 0
+        self.pc:int = 0
+        self.runMode:RunMode = RunMode.Paused
+        self.stack:list[SmolStackType] = []
+        self.jmplocs:Dict[int, int] = {} #list[int] = []
+        self.maxStackSize:int = -1
+        self.maxCycles:int = -1
+
+        self.globalEnv:ScopeEnvironment = ScopeEnvironment()
+        self.environment:ScopeEnvironment
+        self.staticTypes:Dict[str, Any] = {} 
+        #externalMethods:Dict[str, Function] = {} 
+
+        #classMethodRegEx = RegularExpression("@([A-Za-z]+)[.]([A-Za-z]+)")
+
+        self.program:SmolProgram = Compiler.compile(source)
 
         self.environment = self.globalEnv
 
@@ -68,12 +65,8 @@ class SmolVM():
     
 
     @staticmethod
-    def Compile(source:str) -> 'SmolVM': 
-        return SmolVM(source)
-    
-    @staticmethod
-    def Init(source:str) -> 'SmolVM': 
-        vm = SmolVM.Compile(source)
+    def init(source:str) -> 'SmolRuntime': 
+        vm = SmolRuntime(source)
         vm.run()
         return vm
 
@@ -275,7 +268,7 @@ class SmolVM():
 
                         # Next pop args off the stack. Op1 is number of args.                    
 
-                        paramValues:list[SmolVariable] = []
+                        paramValues:list[SmolVariableType] = []
 
                         i = 0
                         while (i < instr.operand1):
@@ -537,7 +530,7 @@ class SmolVM():
                                     
                                         # We need to get some arguments
 
-                                        paramValues:list[SmolVariable] = []
+                                        paramValues:list[SmolVariableType] = []
 
                                         i = 0
                                         while (i < int(peek_instr.operand1)):
@@ -573,7 +566,7 @@ class SmolVM():
 
                                         functionName = str(rexResult[2])
 
-                                        functionArgs:list[SmolVariable] = []
+                                        functionArgs:list[SmolVariableType] = []
 
                                         if (name != "@Object.constructor"):                                            
                                             i = 0
@@ -683,7 +676,7 @@ class SmolVM():
 
                     case OpCode.TRY:
 
-                        exception:Optional[SmolVariable]
+                        exception:Optional[SmolVariableType]
 
                         if (instr.operand2 != None and bool(instr.operand2)):
                         
@@ -783,7 +776,7 @@ class SmolVM():
             except Exception as e:
                 
                 handled = False
-                throwObject:SmolVariable = SmolError(e)
+                throwObject:SmolVariableType = SmolError(e)
                 
                 if (isinstance(e, SmolThrownFromInstruction)): 
                     thrownObject = self.stack.pop()

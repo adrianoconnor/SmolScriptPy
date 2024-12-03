@@ -29,6 +29,9 @@ from internals.ast.statements.while_statement import WhileStatement
 
 class AstPrinter():
 
+    def __init__(self):
+        self.indent_val:int = 0
+
     def processStatement(self, statement):
         return statement.accept(self)
     
@@ -43,8 +46,7 @@ class AstPrinter():
     
     # def visitBinaryExpression(self, exp):
     #     return f"[BinaryExpression\n   left: {exp.left.accept(self)}\n     op:\n  right:\n]"
-    
-    indent_val:int = 0
+
 
     def indent(self) -> str:
         self.indent_val += 1

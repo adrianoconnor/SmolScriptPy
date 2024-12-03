@@ -1,17 +1,12 @@
 from .expression import Expression
-from ...token import Token
+from internals.token import Token
 
 class SetExpression(Expression):
 
-    obj:Expression
-    name:Token
-    value:Expression
-    
-    def __init__(self, object:Expression, name:Token, value:Expression):
-        super().__init__()
-        self.object = object
-        self.name = name
-        self.value = value
+    def __init__(self, obj:Expression, name:Token, value:Expression):
+        self.obj:Expression = obj
+        self.name:Token = name
+        self.value:Expression = value
 
     def accept(self, visitor):
         return visitor.visitSetExpression(self)

@@ -3,15 +3,12 @@ from .statement import Statement
 
 class BlockStatement(Statement):
 
-    statements:list[Statement]
-    insertedByParser:Optional[bool]
-
-    blockStartTokenIndex:int
-    blockEndTokenIndex:int
-
     def __init__(self, statements:list[Statement], isVirtual:Optional[bool] = False):
-        self.statements = statements
-        self.insertedByParser = isVirtual
+        self.statements:list[Statement] = statements
+        self.insertedByParser:Optional[bool] = isVirtual
+
+        self.blockStartTokenIndex:int
+        self.blockEndTokenIndex:int
 
     def accept(self, visitor):
         return visitor.visitBlockStatement(self)

@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Dict
 
 class TokenType(Enum):
     LEFT_BRACKET = 1
@@ -89,3 +90,35 @@ class TokenType(Enum):
     THROW = 72,
 
     EOF = 0
+
+
+class TokenTypeMapping():
+
+    KeywordToToken:Dict[str,TokenType] = {
+        "break": TokenType.BREAK,
+        "class": TokenType.CLASS,
+        "case": TokenType.CASE,
+        "const": TokenType.CONST,
+        "continue": TokenType.CONTINUE,
+        "debugger": TokenType.DEBUGGER,
+        "do": TokenType.DO,
+        "else": TokenType.ELSE,
+        "false": TokenType.FALSE,
+        "for": TokenType.FOR,
+        "function": TokenType.FUNC,
+        "if": TokenType.IF,
+        "null": TokenType.NULL,
+        "new": TokenType.NEW,
+        "return": TokenType.RETURN,
+        "super": TokenType.SUPER,
+        "switch": TokenType.SWITCH,
+        "true": TokenType.TRUE,
+        "var": TokenType.VAR,
+        "let": TokenType.VAR,
+        "while": TokenType.WHILE,
+        "undefined": TokenType.UNDEFINED,
+        "try": TokenType.TRY,
+        "catch": TokenType.CATCH,
+        "finally": TokenType.FINALLY,
+        "throw": TokenType.THROW
+    }

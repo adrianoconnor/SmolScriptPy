@@ -43,23 +43,85 @@ from internals.variable_types.smol_null import SmolNull
 from internals.variable_types.smol_number import SmolNumber
 from internals.variable_types.smol_string import SmolString
 from internals.variable_types.smol_undefined import SmolUndefined
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 from .token_types import TokenType
 from .token import Token
 
 class WhileLoop:
-    startOfLoop:int
-    endOfLoop:int
-
     def __init__(self, startOfLoop:int, endOfLoop:int):
         self.startOfLoop = startOfLoop
         self.endOfLoop = endOfLoop
     
 class Compiler:
-    _function_table:list[SmolFunction] = []
-    _function_bodies:list[list[ByteCodeInstruction]] = []
 
-    _nextLabel:int = 1
+    def __init__(self):
+        self._function_table:list[SmolFunction] = []
+        self._function_bodies:list[list[ByteCodeInstruction]] = []
+        self._nextLabel:int = 1
+
+        # This is our structure to hold the constants that appear in source and need to be
+        # referenced by the program (e.g., numbers, strings, bools). We define some here
+        # so that a few common ones always have the same index.
+        self._constants:list[SmolVariableType] = []
+
+        self._loopStack:list[WhileLoop] = []
+
+    # This method can be called by any block that needs to create/reference a constant, either
+    # getting the existing index of the value if we already have it, or inserting and returning
+    # the new index 
+    def ensureConst(self, value:SmolVariableType) -> int:
+
+        constIndex = -1
+
+        i = 0
+        while i < self._constants.__len__():
+            e = self._constants[i]
+            
+            if (e == value):
+                constIndex = i
+                break
+            i += 1
+
+        if (constIndex == -1):
+            self._constants.append(value)
+            constIndex = self._constants.__len__() - 1
+
+        return constIndex
+    
+    @staticmethod
+    def compile(source:str) -> SmolProgram:
+        compiler = Compiler()
+        return compiler.do_compile(source)
+
+    def do_compile(self, source:str) -> SmolProgram:
+
+        tokens = Scanner.scan(source)
+        statements = Parser.parse(tokens)
+
+        mainChunk = self.createChunk()
+        Compiler.appendInstruction(mainChunk, OpCode.START) # This NOP is here so if the user starts the program with step, it will immediately hit this and show the first real statement as the next/first instruction to execute
+        mainChunk[0].isStatementStartpoint = True
+        
+        i = 0
+        while(i < statements.__len__()):
+            Compiler.appendChunk(mainChunk, statements[i].accept(self))
+            i += 1
+
+        Compiler.appendInstruction(mainChunk, OpCode.EOF)
+        mainChunk[mainChunk.__len__() - 1].isStatementStartpoint = True
+
+        program = SmolProgram()
+        program.constants = self._constants
+        program.code_sections.append(mainChunk)
+        
+        for b in self._function_bodies:
+            program.code_sections.append(b)
+
+        program.function_table = self._function_table
+        program.tokens = tokens
+        program.source = source
+
+        return program
 
     # Labels for jumoing to are just numeric place holders. When a code gen section needs to
     # create a new jump-location, it can use this function
@@ -89,67 +151,6 @@ class Compiler:
     @staticmethod
     def peek_last(the_list:list[Any]) -> Any:
         return the_list[the_list.__len__() - 1]
-    
-    # This is our structure to hold the constants that appear in source and need to be
-    # referenced by the program (e.g., numbers, strings, bools). We define some here
-    # so that a few common ones always have the same index.
-    _constants:list[SmolVariable] = []
-
-    _loopStack:list[WhileLoop] = []
-    
-    # This method can be called by any block that needs to create/reference a constant, either
-    # getting the existing index of the value if we already have it, or inserting and returning
-    # the new index 
-    def ensureConst(self, value:SmolVariable) -> int:
-
-        constIndex = -1
-
-        i = 0
-        while i < self._constants.__len__():
-            e = self._constants[i]
-            
-            if (e == value):
-                constIndex = i
-                break
-            i += 1
-
-        if (constIndex == -1):
-            self._constants.append(value)
-            constIndex = self._constants.__len__() - 1
-
-        return constIndex
-    
-    def Compile(self, source:str) -> SmolProgram:
-
-        scanner = Scanner(source)
-        scanner.scan()
-        parser = Parser(scanner.tokens)
-        statements = parser.parse()
-
-        mainChunk = self.createChunk()
-        Compiler.appendInstruction(mainChunk, OpCode.START) # This NOP is here so if the user starts the program with step, it will immediately hit this and show the first real statement as the next/first instruction to execute
-        mainChunk[0].isStatementStartpoint = True
-        
-        i = 0
-        while(i < statements.__len__()):
-            Compiler.appendChunk(mainChunk, statements[i].accept(self))
-            i += 1
-
-        Compiler.appendInstruction(mainChunk, OpCode.EOF)
-        mainChunk[mainChunk.__len__() - 1].isStatementStartpoint = True
-
-        program = SmolProgram()
-        program.constants = self._constants
-        program.code_sections.append(mainChunk)
-        
-        for b in self._function_bodies:
-            program.code_sections.append(b)
-
-        program.function_table = self._function_table
-        program.tokens = scanner.tokens
-        program.source = source
-
-        return program
 
     # Short hand helper method to keep the code a little tidier 
     def createChunk(self) -> list[ByteCodeInstruction]:

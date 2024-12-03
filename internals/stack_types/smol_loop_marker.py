@@ -3,11 +3,8 @@ from .smol_stack_type import SmolStackType
 
 class SmolLoopMarker(SmolStackType):
 
-    current_env:ScopeEnvironment
-
     def __init__(self, current_env:ScopeEnvironment):
-        super().__init__()
-        self.current_env = current_env
+        self.current_env:ScopeEnvironment = current_env
 
     def toString(self):
         return "(SmolLoopMarker)"

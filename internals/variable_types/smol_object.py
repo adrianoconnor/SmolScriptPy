@@ -1,16 +1,11 @@
 from internals.scope_environment import ScopeEnvironment
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 
-
-class SmolObject(SmolVariable):
-    
-    object_env:ScopeEnvironment
-    class_name:str
+class SmolObject(SmolVariableType):
 
     def __init__(self, object_env:ScopeEnvironment, class_name:str):
-        super().__init__()
-        self.object_env = object_env
-        self.class_name = class_name
+        self.object_env:ScopeEnvironment = object_env
+        self.class_name:str = class_name
 
     def getValue(self):
         return self
@@ -21,21 +16,21 @@ class SmolObject(SmolVariable):
         else:
             return "(SmolObject)"
 
-    def getProp(self, propName:str) -> SmolVariable:
+    def getProp(self, propName:str) -> SmolVariableType:
         match (propName):
             case default:
                 raise RuntimeError(f"{self} cannot handle native property ${propName}");
 
-    def setProp(self, propName:str, value:SmolVariable):    
+    def setProp(self, propName:str, value:SmolVariableType):    
         raise RuntimeError("Not a valid target")
     
-    def nativeCall(funcName:str, parameters:list[SmolVariable]) -> SmolVariable:
+    def nativeCall(funcName:str, parameters:list[SmolVariableType]) -> SmolVariableType:
         match (funcName):
             case default:
                 raise RuntimeError(f"Object cannot handle native function ${funcName}")
 
     @staticmethod
-    def staticCall(funcName:str , parameters:list[SmolVariable]) -> SmolVariable:
+    def staticCall(funcName:str , parameters:list[SmolVariableType]) -> SmolVariableType:
         match (funcName):
  
             case "constructor":

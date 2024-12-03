@@ -2,7 +2,7 @@ from internals.compiler import Compiler
 from internals.scanner import Scanner
 from internals.parser import Parser
 from internals.ast.ast_printer import AstPrinter
-from smolvm import SmolVM
+from smol_runtime import SmolRuntime
 
 s = """
 function demo_func(start, end) { 
@@ -28,7 +28,7 @@ for stmt in statements:
 #prg = compiler.Compile("var x = 1; for(var a = 0; a < 10; a++) { x += a; }")
 #print(prg.decompile())
 
-vm = SmolVM.Init("var a = 1; for(var i = 0; i <= 10; i++) { a = a + 1; }")
+vm = SmolRuntime.Init("var a = 1; for(var i = 0; i <= 10; i++) { a = a + 1; }")
 
 print(vm.program.decompile())
 
@@ -48,7 +48,7 @@ stmts = p.parse()
 #prg = c.Compile("var x = 1; x = x + 1;")
 #print(prg.decompile())
 
-vm = SmolVM.Init("""var a = 10 * (3 + 4);""")
+vm = SmolVM.init("""var a = 10 * (3 + 4);""")
 
 print(vm.runMode)
 

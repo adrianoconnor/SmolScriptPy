@@ -1,19 +1,12 @@
-from .smol_variable_type import SmolVariable
+from .smol_variable_type import SmolVariableType
 
-class SmolFunction(SmolVariable):
-
-    global_function_name:str
-    code_section:int
-    arity:int
-    param_variable_names:list[str] = []
+class SmolFunction(SmolVariableType):
 
     def __init__(self, global_function_name:str, code_section:int, arity:int, param_variable_names:list[str]):
-    
-        super().__init__()
-        self.global_function_name = global_function_name
-        self.code_section = code_section
-        self.arity = arity
-        self.param_variable_names = param_variable_names
+        self.global_function_name:str = global_function_name
+        self.code_section:int = code_section
+        self.arity:int = arity
+        self.param_variable_names:list[str] = param_variable_names
     
     def getValue(self):
         return self

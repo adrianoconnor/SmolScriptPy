@@ -1,15 +1,11 @@
 from .expression import Expression
-from ...token import Token
+from internals.token import Token
 
 class GroupingExpression(Expression):
 
-    expr:Expression
-    castToStringForEmbeddedStringExpression:bool = False
-
     def __init__(self, expr:Expression, castToStringForEmbeddedStringExpression:bool = False):
-        super().__init__()
-        self.expr = expr
-        self.castToStringForEmbeddedStringExpression = castToStringForEmbeddedStringExpression
+        self.expr:Expression = expr
+        self.castToStringForEmbeddedStringExpression:bool = castToStringForEmbeddedStringExpression
 
     def accept(self, visitor):
         return visitor.visitGroupingExpression(self)

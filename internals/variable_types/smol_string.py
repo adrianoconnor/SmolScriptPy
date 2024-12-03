@@ -1,12 +1,9 @@
-from internals.variable_types.smol_variable_type import SmolVariable
+from internals.variable_types.smol_variable_type import SmolVariableType
 
-class SmolString(SmolVariable):
-
-    value:str
+class SmolString(SmolVariableType):
 
     def __init__(self, value:str):
-        super().__init__()
-        self.value = value
+        self.value:str = value
 
     def __str__(self) -> str:
         return f"(String) {self.value}"

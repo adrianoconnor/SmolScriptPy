@@ -1,47 +1,9 @@
-from typing import Any, Dict
+from typing import Any
 from compiler_error import SmolCompilerError
-from .token_types import TokenType
+from .token_types import TokenType, TokenTypeMapping
 from .token import Token
 
 class Scanner:
-
-    tokens:list[Token] = []
-    
-    keywords:Dict[str,TokenType] = {
-        "break": TokenType.BREAK,
-        "class": TokenType.CLASS,
-        "case": TokenType.CASE,
-        "const": TokenType.CONST,
-        "continue": TokenType.CONTINUE,
-        "debugger": TokenType.DEBUGGER,
-        "do": TokenType.DO,
-        "else": TokenType.ELSE,
-        "false": TokenType.FALSE,
-        "for": TokenType.FOR,
-        "function": TokenType.FUNC,
-        "if": TokenType.IF,
-        "null": TokenType.NULL,
-        "new": TokenType.NEW,
-        "return": TokenType.RETURN,
-        "super": TokenType.SUPER,
-        "switch": TokenType.SWITCH,
-        "true": TokenType.TRUE,
-        "var": TokenType.VAR,
-        "let": TokenType.VAR,
-        "while": TokenType.WHILE,
-        "undefined": TokenType.UNDEFINED,
-        "try": TokenType.TRY,
-        "catch": TokenType.CATCH,
-        "finally": TokenType.FINALLY,
-        "throw": TokenType.THROW
-    }
-
-    startOfToken:int = 0
-    currentPos:int = 0
-    currentLine:int = 1
-    currentLineStartIndex:int = 0
-    previous:int = 0
-    source:str = ""
 
     def __init__(self, source:str):
         self.tokens = []
@@ -54,10 +16,12 @@ class Scanner:
         self.source = source
 
     @staticmethod
-    def tokenize(source:str) -> list[Token]:
-        return Scanner(source).scan()
+    def scan(source:str) -> list[Token]:
+        instance = Scanner(source)
+        instance._scan()
+        return instance.tokens
     
-    def scan(self):
+    def _scan(self):
         while(self.reachedEnd() == False):
             self.startOfToken = self.currentPos
             self.scanToken()        
@@ -276,8 +240,8 @@ class Scanner:
 
         stringValue = self.source[self.startOfToken:self.currentPos]
 
-        if (self.keywords.__contains__(stringValue)):
-            self.addToken(self.keywords[stringValue])
+        if (TokenTypeMapping.KeywordToToken.__contains__(stringValue)):
+            self.addToken(TokenTypeMapping.KeywordToToken[stringValue])
         else:
             self.addToken(TokenType.IDENTIFIER)
 

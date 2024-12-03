@@ -3,13 +3,11 @@ from ..expressions.expression import Expression
 
 class ExpressionStatement(Statement):
 
-    expression:Expression
-
-    firstTokenIndex:int
-    lastTokenIndex:int
-
     def __init__(self, expression:Expression):
-        self.expression = expression
+        self.expression:Expression = expression
+        
+        self.firstTokenIndex:int
+        self.lastTokenIndex:int
 
     def accept(self, visitor):
         return visitor.visitExpressionStatement(self)

@@ -3,17 +3,14 @@ from .statement import Statement
 
 class WhileStatement(Statement):
 
-    whileCondition:Expression
-    executeStatement:Statement
-
-    exprFirstTokenIndex:int
-    exprLastTokenIndex:int
-    stmtFirstTokenIndex:int
-    stmtLastTokenIndex:int
-
     def __init__(self, whileCondition:Expression, executeStatement:Statement):
-        self.whileCondition = whileCondition
-        self.executeStatement = executeStatement
+        self.whileCondition:Expression = whileCondition
+        self.executeStatement:Statement = executeStatement
+
+        self.exprFirstTokenIndex:int
+        self.exprLastTokenIndex:int
+        self.stmtFirstTokenIndex:int
+        self.stmtLastTokenIndex:int
 
     def accept(self, visitor):
         return visitor.visitWhileStatement(self)

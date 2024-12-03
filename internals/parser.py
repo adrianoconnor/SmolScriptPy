@@ -41,14 +41,16 @@ from .token import Token
 
 class Parser():
 
-    tokens:list[Token] = []
-    current:int = 0
-
-    def __init__(self, tokens):
+    def __init__(self, tokens:list[Token]):
         self.tokens = tokens
+        self.current = 0
     
-    def parse(self) -> list[Statement]:
-
+    @staticmethod
+    def parse(tokens:list[Token]) -> list[Statement]:
+        parser = Parser(tokens)
+        return parser.do_parse()
+    
+    def do_parse(self) -> list[Statement]:
         statements:list[Statement] = []
         
         while(not(self.reachedEnd())):
