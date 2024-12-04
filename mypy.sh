@@ -1,1 +1,1 @@
-mypy smolscript.py --check-untyped-defs
+python -m mypy smol_runtime.py --check-untyped-defs

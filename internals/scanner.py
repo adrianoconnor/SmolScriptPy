@@ -6,14 +6,14 @@ from .token import Token
 class Scanner:
 
     def __init__(self, source:str):
-        self.tokens = []
-        self.startOfToken = 0
-        self.currentPos = 0
-        self.currentLine = 0
-        self.currentLineStartIndex = 0
-        self.previous = 0
+        self.tokens:list[Token] = []
+        self.startOfToken:int = 0
+        self.currentPos:int = 0
+        self.currentLine:int = 0
+        self.currentLineStartIndex:int = 0
+        self.previous:int = 0
 
-        self.source = source
+        self.source:str = source
 
     @staticmethod
     def scan(source:str) -> list[Token]:

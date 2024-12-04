@@ -1,12 +1,13 @@
+from typing import Optional
 from internals.token_types import TokenType
 
 
 class Token():
     
-    def __init__(self, tokenType:TokenType, lexeme:str, literal:str, line:int, col:int, startPos:int, endPos:int):
+    def __init__(self, tokenType:TokenType, lexeme:str, literal:Optional[str], line:int, col:int, startPos:int, endPos:int):
         self.type:TokenType = tokenType
         self.lexeme:str = lexeme
-        self.literal:str = literal
+        self.literal:Optional[str] = literal
         self.line:int = line
         self.col:int = col
         self.startPos:int = startPos

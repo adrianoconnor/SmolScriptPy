@@ -1,12 +1,10 @@
 from typing import Dict, Optional
 from .variable_types.smol_variable_type import SmolVariableType
-from .token_types import TokenType
 
 class ScopeEnvironment():
 
     def __init__(self, enclosing:Optional['ScopeEnvironment'] = None):
-        self.enclosing:Optional['ScopeEnvironment'] = None
-        self._variables:Dict[str, TokenType] = {}
+        self._variables:Dict[str, SmolVariableType] = {}
         self.enclosing:Optional['ScopeEnvironment'] = enclosing
 
     def define(self, name:str, value:SmolVariableType) -> None:
@@ -20,6 +18,7 @@ class ScopeEnvironment():
         elif (isThis):
             self.define(name, value)
         elif (self.enclosing != None):
+            assert self.enclosing
             self.enclosing.assign(name, value)
         else:
             raise RuntimeError("Variable undefined")
@@ -28,6 +27,7 @@ class ScopeEnvironment():
         if (self._variables.__contains__(name)):
             return self._variables[name]
         elif (self.enclosing != None):
+            assert self.enclosing
             return self.enclosing.get(name)
         else:
             raise RuntimeError("Variable undefined")
@@ -36,6 +36,7 @@ class ScopeEnvironment():
         if (self._variables.__contains__(name)):
             return self._variables[name]
         elif (self.enclosing != None):
+            assert self.enclosing
             return self.enclosing.tryGet(name)
         else:
             return None

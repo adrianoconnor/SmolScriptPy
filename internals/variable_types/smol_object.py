@@ -24,7 +24,7 @@ class SmolObject(SmolVariableType):
     def setProp(self, propName:str, value:SmolVariableType):    
         raise RuntimeError("Not a valid target")
     
-    def nativeCall(funcName:str, parameters:list[SmolVariableType]) -> SmolVariableType:
+    def nativeCall(self, funcName:str, parameters:list[SmolVariableType]) -> SmolVariableType:
         match (funcName):
             case default:
                 raise RuntimeError(f"Object cannot handle native function ${funcName}")

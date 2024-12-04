@@ -43,7 +43,7 @@ class SmolRuntime():
         self.pc:int = 0
         self.runMode:RunMode = RunMode.Paused
         self.stack:list[SmolStackType] = []
-        self.jmplocs:Dict[int, int] = {} #list[int] = []
+        self.jmplocs:Dict[int, int] = {}
         self.maxStackSize:int = -1
         self.maxCycles:int = -1
 
@@ -77,29 +77,24 @@ class SmolRuntime():
         # in the instructions for that section so we can jump
         # if we need to.
 
-        i = 0
-        while (i < self.program.code_sections.__len__()):
+        for i in range(self.program.code_sections.__len__()):
         
             # Not sure if this will hold up, might be too simplistic
-            j = 0
-            while (j < self.program.code_sections[i].__len__()):
+            for j in range(self.program.code_sections[i].__len__()):
             
                 instr = self.program.code_sections[i][j]
 
                 if (instr.opcode == OpCode.LABEL):
                 
+                    assert instr.operand1 != None
                     # We're not storing anything about the section
                     # number but this should be ok becuase we should
                     # only ever jump inside the current section...
                     # Jumps to other sections are handled in a different
                     # way using the CALL instruction
-                    self.jmplocs[instr.operand1] = j
-                
-                j += 1
-            
-            i+= 1
+                    self.jmplocs[int(str(instr.operand1))] = j
         
-        print (f"jmplocs: {self.jmplocs}")
+        #print (f"jmplocs: {self.jmplocs}")
                 
     
 
@@ -115,13 +110,11 @@ class SmolRuntime():
     
     def callExternalMethod(self, methodName:str, numberOfPassedArgs:int): 
 
-        methodArgs:list[any] = []
-
-        i = 0
-        while (i < numberOfPassedArgs):
+        methodArgs:list[Any] = []
+        
+        for i in range(numberOfPassedArgs):
             value = self.stack.pop()
             methodArgs.append(value.getValue())
-            i += 1
 
         # returnValue = self.externalMethods[methodName].apply(None, methodArgs)
         returnValue = None
@@ -132,7 +125,7 @@ class SmolRuntime():
             return SmolVariableCreator.create(returnValue)
         
 
-    def call(self, functionName:str, args:list[any]) -> Any:
+    def call(self, functionName:str, args:list[Any]) -> Any:
         if (self.runMode != RunMode.Done):
             raise RuntimeError("Init() should be used before calling a function, to ensure the vm state is prepared")
         
@@ -149,12 +142,11 @@ class SmolRuntime():
 
         fnIndex = -1
 
-        i = 0
-        while(i <  self.program.function_table.__len__()):
+
+        for i in range(self.program.function_table.__len__()):
             if (self.program.function_table[i].global_function_name == functionName):
                 fnIndex = i
                 break
-            i += 1
             
         if (fnIndex == -1):
             raise RuntimeError(f"Could not find a function named '{functionName}'")
@@ -165,16 +157,12 @@ class SmolRuntime():
         # Prime the environment with variables for
         # the parameters in the function declaration (actual number
         # passed might be different)
-        i = 0
-        while (i < fn.arity):
-        
+        for i in range(fn.arity):        
             if (args.__len__() > i):
                 env.define(fn.param_variable_names[i], SmolVariableCreator.create(args[i]))
             else:
                 env.define(fn.param_variable_names[i], SmolUndefined())
             
-            i += 1
-
         self.stack.append(state)
 
         self.pc = 0
@@ -190,7 +178,7 @@ class SmolRuntime():
         if (self.runMode == RunMode.Ready or self.runMode == RunMode.Paused): 
             self._run(RunMode.Run)
         
-    def getCurrentRunMode(self) -> str: 
+    def getCurrentRunMode(self) -> RunMode: 
         return self.runMode
     
     def step(self, vmInstrStep:bool = False) -> None: 
@@ -239,73 +227,74 @@ class SmolRuntime():
                         True
 
                     case OpCode.CONST:
-                        # Load a value from the data section at specified index
-                        # and place it on the stack
-                        self.stack.append(self.program.constants[instr.operand1])
+                        # Load a value from the program constants at specified index (op1) and place it on the stack
+                        assert instr.operand1 != None
+                        self.stack.append(self.program.constants[int(str(instr.operand1))])
         
                     case OpCode.CALL:
                         
                         callData = self.stack.pop()
 
-                        if (isinstance(callData, SmolNativeFunctionResult)):
-                            raise RuntimeWarning() # https://stackoverflow.com/questions/72273235/how-to-break-the-match-case-but-not-the-while-loop
-                            # Everything was handled by the previous Fetch instruction, which made a native
-                            # call and left the result on the stack.
+                        # If we've got a SmolNativeFunctionResult, then we know that the FETCH that
+                        # previously executed for this function handled the actual function call
+                        # and left the result on the stack, so we don't have anything to do here.
+                        if (not isinstance(callData, SmolNativeFunctionResult)):
 
-                        # First create the env for our function
+                            # First create the env for our function
 
-                        env = ScopeEnvironment(self.globalEnv)
+                            env = ScopeEnvironment(self.globalEnv)
 
-                        if (isinstance(instr.operand2, bool) and instr.operand2 == True):
-                        
-                            # If op2 is true, that means we're calling a method
-                            # on an object/class, so we need to get the objref
-                            # (from the next value on the stack) and use that
-                            # objects environment instead.
+                            if (isinstance(instr.operand2, bool) and instr.operand2 == True):
+                            
+                                # If op2 is true, that means we're calling a method
+                                # on an object/class, so we need to get the objref
+                                # (from the next value on the stack) and use that
+                                # objects environment instead.
 
-                            env = (self.stack.pop()).object_env
-                        
+                                env = (self.stack.pop()).object_env
+                            
 
-                        # Next pop args off the stack. Op1 is number of args.                    
+                            # Next pop args off the stack. Op1 is number of args.                    
 
-                        paramValues:list[SmolVariableType] = []
+                            paramValues:list[SmolVariableType] = []
 
-                        i = 0
-                        while (i < instr.operand1):
-                            paramValues.append(self.stack.pop())
-                            i += 1
+                            assert instr.operand1 != None
 
-                        # Now prime the environment with variables for
-                        # the parameters in the function declaration (actual number
-                        # passed might be different)
+                            for i in range(int(str(instr.operand1))):
+                                paramValue = self.stack.pop()
+                                assert isinstance(paramValue, SmolVariableType)
+                                paramValues.append(paramValue)
 
-                        i = 0
-                        while(i < callData.arity):
-                            if (paramValues.__len__() > i):
-                                env.define(callData.param_variable_names[i], paramValues[i])
-                            else:                            
-                                env.define(callData.param_variable_names[i], SmolUndefined())
-                            i += 1
+                            # Now prime the environment with variables for
+                            # the parameters in the function declaration (actual number
+                            # passed might be different)
 
-                        # Store our current program/vm state so we can restor
+                            
+                            for i in range(callData.arity):
+                                if (paramValues.__len__() > i):
+                                    env.define(callData.param_variable_names[i], paramValues[i])
+                                else:                            
+                                    env.define(callData.param_variable_names[i], SmolUndefined())
 
-                        state = SmolCallSiteSaveState(
-                            self.code_section,
-                            self.pc,
-                            self.environment,
-                            False # call is extern
-                        )
+                            # Store our current program/vm state so we can restor
 
-                        # Switch the active env in the vm over to the one we prepared for the call
+                            state = SmolCallSiteSaveState(
+                                self.code_section,
+                                self.pc,
+                                self.environment,
+                                False # call is extern
+                            )
 
-                        self.environment = env
+                            # Switch the active env in the vm over to the one we prepared for the call
 
-                        self.stack.append(state)
+                            self.environment = env
 
-                        # Finally set our PC to the start of the function we're about to execute
+                            self.stack.append(state)
 
-                        self.pc = 0
-                        self.code_section = callData.code_section
+                            # Finally set our PC to the start of the function we're about to execute
+
+                            self.pc = 0
+                            self.code_section = callData.code_section
                     
                     case OpCode.ADD:
                         
@@ -532,10 +521,10 @@ class SmolRuntime():
 
                                         paramValues:list[SmolVariableType] = []
 
-                                        i = 0
-                                        while (i < int(peek_instr.operand1)):
+                                        assert peek_instr.operand1 != None
+
+                                        for i in range(int(str(peek_instr.operand1))):
                                             paramValues.append(self.stack.pop())
-                                            i += 1
                                         
                                         self.stack.append((objRef).nativeCall(name, paramValues))
                                         self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
@@ -569,13 +558,11 @@ class SmolRuntime():
                                         functionArgs:list[SmolVariableType] = []
 
                                         if (name != "@Object.constructor"):                                            
-                                            i = 0
-                                            while (i < int(peek_instr.operand1)):
-                                                functionArgs.append(self.stack.pop())
-                                                i += 1
+                                            
+                                            assert peek_instr.operand1 != None
 
-                                            #if (int(peek_instr.operand1) > 0):                                                
-                                                #parameters.append(functionArgs)
+                                            for i in range(int(str(peek_instr.operand1))):
+                                                functionArgs.append(self.stack.pop())
                                             
                                         # Now we've got rid of the params we can get rid
                                         # of the dummy object that create_object left
@@ -737,30 +724,28 @@ class SmolRuntime():
 
                         class_name = str(instr.operand1)
 
-                        if (self.staticTypes[class_name] != None):                        
+                        if (self.staticTypes[class_name] != None):
                             self.stack.append(SmolNativeFunctionResult())
-                            break
-                            ###### TODO: https://stackoverflow.com/questions/72273235/how-to-break-the-match-case-but-not-the-while-loop
-                        
-                        obj_environment = ScopeEnvironment(self.globalEnv)
-                        
-                        for fn in self.program.function_table:
-                            #.filter((el) => el.global_function_name.startsWith(`@$class_name.`)).forEach(classFunc => 
+                        else:
+                            obj_environment = ScopeEnvironment(self.globalEnv)
+                            
+                            for fn in self.program.function_table:
+                                #.filter((el) => el.global_function_name.startsWith(`@$class_name.`)).forEach(classFunc => 
 
-                            if (fn.global_function_name.startswith("@$class_name.")):
+                                if (fn.global_function_name.startswith("@$class_name.")):
 
-                                funcName = fn.global_function_name.substring(class_name.__len__() + 2)
+                                    funcName = fn.global_function_name.substring(class_name.__len__() + 2)
 
-                                obj_environment.define(funcName, SmolFunction(
-                                    fn.global_function_name,
-                                    fn.code_section,
-                                    fn.arity,
-                                    fn.param_variable_names
-                                ))                        
+                                    obj_environment.define(funcName, SmolFunction(
+                                        fn.global_function_name,
+                                        fn.code_section,
+                                        fn.arity,
+                                        fn.param_variable_names
+                                    ))                        
 
-                        self.stack.append(SmolObject(obj_environment, class_name))
+                            self.stack.append(SmolObject(obj_environment, class_name))
 
-                        obj_environment.define("this", self.stack.peek())
+                            obj_environment.define("this", self.stack.peek())
 
                     case OpCode.DUPLICATE_VALUE:
                     

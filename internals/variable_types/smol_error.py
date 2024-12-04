@@ -6,4 +6,4 @@ class SmolError(SmolVariableType):
         self.message:str = message
 
     def __str__(self) -> str:
-        return f"(Error) {self.value}"
+        return f"(Error) {self.message}"

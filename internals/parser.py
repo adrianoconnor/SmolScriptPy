@@ -699,7 +699,8 @@ class Parser():
             return LiteralExpression(SmolUndefined())
 
         if(self.match(TokenType.NUMBER)):
-            return LiteralExpression(SmolNumber(float(self.previous().literal)))
+            assert self.previous().literal != None
+            return LiteralExpression(SmolNumber(float(str(self.previous().literal))))
 
         if(self.match(TokenType.STRING)):
             return LiteralExpression(SmolString(str(self.previous().literal)))

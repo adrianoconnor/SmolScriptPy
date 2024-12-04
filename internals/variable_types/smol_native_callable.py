@@ -9,11 +9,11 @@ class ISmolNativeCallable(SmolVariableType):
     def getValue(self) -> Any:
         raise RuntimeError("Should not be called on base class")
 
-    def setProp(name:str, value:Any) -> None:  
+    def setProp(self, name:str, value:Any) -> None:  
         raise RuntimeError("Should not be called on base class")
 
-    def getProp(name:str) -> SmolVariableType:
+    def getProp(self, name:str) -> SmolVariableType:
         raise RuntimeError("Should not be called on base class")
     
-    def nativeCall(funcName:str, parameters:list[SmolVariableType]) -> SmolVariableType:
+    def nativeCall(self, funcName:str, parameters:list[SmolVariableType]) -> SmolVariableType:
         raise RuntimeError("Should not be called on base class")

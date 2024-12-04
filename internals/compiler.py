@@ -73,14 +73,12 @@ class Compiler:
 
         constIndex = -1
 
-        i = 0
-        while i < self._constants.__len__():
+        for i in range(self._constants.__len__()):
             e = self._constants[i]
             
             if (e == value):
                 constIndex = i
                 break
-            i += 1
 
         if (constIndex == -1):
             self._constants.append(value)
@@ -102,10 +100,8 @@ class Compiler:
         Compiler.appendInstruction(mainChunk, OpCode.START) # This NOP is here so if the user starts the program with step, it will immediately hit this and show the first real statement as the next/first instruction to execute
         mainChunk[0].isStatementStartpoint = True
         
-        i = 0
-        while(i < statements.__len__()):
+        for i in range(statements.__len__()):
             Compiler.appendChunk(mainChunk, statements[i].accept(self))
-            i += 1
 
         Compiler.appendInstruction(mainChunk, OpCode.EOF)
         mainChunk[mainChunk.__len__() - 1].isStatementStartpoint = True
