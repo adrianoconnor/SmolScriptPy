@@ -841,11 +841,10 @@ class Compiler:
                 # after it in normal cirumstances.
                 if (isinstance(expr.right, LiteralExpression) and isinstance(expr.right.value, SmolNumber)):
                     Compiler.appendInstruction(chunk, OpCode.CONST, self.ensureConst(SmolNumber(0 - expr.right.value.value)))
-                
-
-                Compiler.appendInstruction(chunk, OpCode.CONST, self.ensureConst(SmolNumber(0)))
-                Compiler.appendChunk(chunk, expr.right.accept(self))
-                Compiler.appendInstruction(chunk, OpCode.SUB)        
+                else:
+                    Compiler.appendInstruction(chunk, OpCode.CONST, self.ensureConst(SmolNumber(0)))
+                    Compiler.appendChunk(chunk, expr.right.accept(self))
+                    Compiler.appendInstruction(chunk, OpCode.SUB)        
 
         return chunk
     

@@ -214,7 +214,7 @@ class SmolRuntime():
 
             self.pc += 1
 
-            print (instr)
+            # print (instr)
 
             try:
                 match (instr.opcode):
