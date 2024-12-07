@@ -17,6 +17,7 @@ from internals.variable_types.smol_bool import SmolBool
 from internals.variable_types.smol_string import SmolString
 from internals.variable_types.smol_undefined import SmolUndefined
 from internals.variable_types.smol_number import SmolNumber
+from internals.variable_types.smol_nan import SmolNaN
 from internals.variable_types.smol_variable_type import SmolVariableType
 from internals.stack_types.smol_stack_type import SmolStackType
 from internals.variable_types.smol_variable_creator import SmolVariableCreator
@@ -65,10 +66,19 @@ class SmolRuntime():
     
 
     @staticmethod
-    def init(source:str) -> 'SmolRuntime': 
+    def create(source:str, initialize:bool = False) -> 'SmolRuntime': 
         vm = SmolRuntime(source)
-        vm.run()
+        if (initialize):
+            vm.run()
         return vm
+
+    def get_variable(self, variable_name):
+        if variable_name in self.environment._variables:
+            smol_var = self.environment._variables[variable_name]
+            assert isinstance(smol_var, SmolVariableType)
+            return smol_var.getValue()
+        else:
+            return None
 
     def buildJumpTable(self):
     
@@ -98,7 +108,8 @@ class SmolRuntime():
                 
     
 
-    #def createStdLib() 
+    def createStdLib(self): 
+        pass
     #    self.staticTypes['Object'] = SmolObject
     #    self.staticTypes['String'] = SmolString
     #    self.staticTypes['Array'] = SmolArray
@@ -114,6 +125,7 @@ class SmolRuntime():
         
         for i in range(numberOfPassedArgs):
             value = self.stack.pop()
+            assert isinstance(value, SmolVariableType)
             methodArgs.append(value.getValue())
 
         # returnValue = self.externalMethods[methodName].apply(None, methodArgs)
@@ -122,10 +134,9 @@ class SmolRuntime():
         if (returnValue == None):
             return SmolUndefined()
         else:
-            return SmolVariableCreator.create(returnValue)
-        
+            return SmolVariableCreator(returnValue)
 
-    def call(self, functionName:str, args:list[Any]) -> Any:
+    def call(self, functionName:str, *args:list[Any]) -> Any:
         if (self.runMode != RunMode.Done):
             raise RuntimeError("Init() should be used before calling a function, to ensure the vm state is prepared")
         
@@ -133,7 +144,7 @@ class SmolRuntime():
         self.runMode = RunMode.Paused
 
         # Store the current state. This doesn't matter too much, because it shouldn't really
-        # be runnable after we're done, but it doesn't hurt to do self.
+        # be runnable after we're done, but it doesn't hurt to do this.
         state = SmolCallSiteSaveState(self.code_section, self.pc, self.environment, True)
 
         # Create an environment for the function
@@ -142,24 +153,22 @@ class SmolRuntime():
 
         fnIndex = -1
 
-
         for i in range(self.program.function_table.__len__()):
             if (self.program.function_table[i].global_function_name == functionName):
                 fnIndex = i
                 break
-            
+
         if (fnIndex == -1):
             raise RuntimeError(f"Could not find a function named '{functionName}'")
 
         fn = self.program.function_table[i]
 
-
         # Prime the environment with variables for
         # the parameters in the function declaration (actual number
         # passed might be different)
-        for i in range(fn.arity):        
+        for i in range(fn.arity):
             if (args.__len__() > i):
-                env.define(fn.param_variable_names[i], SmolVariableCreator.create(args[i]))
+                env.define(fn.param_variable_names[i], SmolVariableCreator(args[i]))
             else:
                 env.define(fn.param_variable_names[i], SmolUndefined())
             
@@ -172,6 +181,7 @@ class SmolRuntime():
 
         returnValue = self.stack.pop()
 
+        assert isinstance(returnValue, SmolVariableType) 
         return returnValue.getValue()
 
     def run(self) -> None:
@@ -234,11 +244,13 @@ class SmolRuntime():
                     case OpCode.CALL:
                         
                         callData = self.stack.pop()
-
+                        
                         # If we've got a SmolNativeFunctionResult, then we know that the FETCH that
                         # previously executed for this function handled the actual function call
                         # and left the result on the stack, so we don't have anything to do here.
                         if (not isinstance(callData, SmolNativeFunctionResult)):
+                            
+                            assert isinstance(callData, SmolFunction)
 
                             # First create the env for our function
 
@@ -251,8 +263,9 @@ class SmolRuntime():
                                 # (from the next value on the stack) and use that
                                 # objects environment instead.
 
-                                env = (self.stack.pop()).object_env
-                            
+                                obj = self.stack.pop()
+                                assert isinstance(obj, SmolObject)
+                                env = (obj).object_env
 
                             # Next pop args off the stack. Op1 is number of args.                    
 
@@ -269,6 +282,7 @@ class SmolRuntime():
                             # the parameters in the function declaration (actual number
                             # passed might be different)
 
+                    
                             
                             for i in range(callData.arity):
                                 if (paramValues.__len__() > i):
@@ -301,17 +315,23 @@ class SmolRuntime():
                         right = self.stack.pop()
                         left = self.stack.pop()
 
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
+
                         if (isinstance(left, SmolNumber) and isinstance(right, SmolNumber)):
                             self.stack.append(SmolNumber(left.getValue() + right.getValue()))
-                        else :
-                            self.stack.append(SmolString(left.getValue().toString() + right.getValue().toString()))
+                        else :                            
+                            self.stack.append(SmolString(left.toString() + right.toString()))
                         
                     case OpCode.SUB:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.append(SmolNumber(left.getValue() - right.getValue()))
+                        if isinstance(left, SmolNumber) and isinstance(right, SmolNumber):
+                            self.stack.append(SmolNumber(left.getValue() - right.getValue()))
+                        else:
+                            self.stack.append(SmolNaN());
 
                     case OpCode.MUL:
                         

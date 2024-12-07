@@ -16,6 +16,8 @@ def SmolVariableCreator(value:Any) -> SmolVariableType:
         return SmolString(value)
     elif (isinstance(value, float)):
         return SmolNumber(value)
+    elif (isinstance(value, int)):
+        return SmolNumber(float(value))
     elif (isinstance(value, bool)):
         return SmolBool(value)
     

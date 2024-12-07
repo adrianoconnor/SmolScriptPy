@@ -10,3 +10,6 @@ class SmolNumber(SmolVariableType):
 
     def getValue(self) -> float:
         return self.value
+
+    def toString(self) -> str:
+        return f'{self.value:g}'

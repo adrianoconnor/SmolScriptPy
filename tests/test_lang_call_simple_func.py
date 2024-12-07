@@ -16,7 +16,9 @@ def test_parser_simple_example():
 
 var a = demo_func(-2, 10);"""
 
-    vm = SmolRuntime.init(src)
+    vm = SmolRuntime.create(src)
+
+    vm.run()
 
     assert vm.environment._variables["a"].value == 42
 

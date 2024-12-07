@@ -10,3 +10,6 @@ class SmolVariableType(SmolStackType):
 
     def equals(self, compareTo) -> bool:
         return (self.getValue() == compareTo.getValue())
+
+    def toString(self) -> str:
+        raise RuntimeError()

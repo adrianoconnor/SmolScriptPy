@@ -19,8 +19,14 @@ print(f"Example Javascript (SmolScript) source code to compile and run:")
 print("----------------------------------------")
 print(example_smolscript_source_code)
 print("----------------------------------------\n")
+print("Creating...")
+
+vm = SmolRuntime.create(example_smolscript_source_code)
+
 print("Running...")
-vm = SmolRuntime.init(example_smolscript_source_code)
+
+vm.run()
+
 print("Completed.\n")
 print(f"After execution, the value of varable 'some_number' in the vm's memory is {vm.globalEnv._variables["some_number"].value}")
 
