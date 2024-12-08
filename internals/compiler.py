@@ -749,7 +749,7 @@ class Compiler:
 
         # Stack now has class instance value
 
-        Compiler.appendInstruction(chunk, OpCode.FETCH, '@$expr.className.lexeme.constructor', True)
+        Compiler.appendInstruction(chunk, OpCode.FETCH, f'@{expr.className.lexeme}.constructor', True)
 
         if (className == "Object"):
             for arg in expr.ctorArgs.__reversed__():

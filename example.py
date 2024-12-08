@@ -1,5 +1,16 @@
 from smol_runtime import SmolRuntime
 
+vm = SmolRuntime.create("var a = []; a.push(123); var b = a[0];")
+print('-----')
+print(vm.program.source)
+print('-----')
+#print(vm.program.decompile())
+vm.run()
+print (f"b = {vm.get_variable("b")}")
+exit(0)
+
+
+
 example_smolscript_source_code = """
 function demo_func(start, end) { 
   var y = 0;

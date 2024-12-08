@@ -19,3 +19,16 @@ def test_call():
     r = vm.call("pow", 2)
 
     assert r == 4
+
+
+def test_array():
+
+    #vm = SmolRuntime.create("var a = []; a.push(123); b = a[0]; c = a.pop(); // d = a.length();}", True)
+    vm = SmolRuntime.create("var a = []; a.push(123); var b = a[0];", True)
+
+
+
+    assert vm.environment._variables["b"].value == 123
+    #assert vm.environment._variables["c"].value == 123
+    #assert vm.environment._variables["d"].value == 0
+

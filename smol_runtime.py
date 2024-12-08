@@ -1,5 +1,6 @@
+import re
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Callable
 from internals.scope_environment import ScopeEnvironment
 from internals.smol_program import SmolProgram
 from internals.compiler import Compiler
@@ -21,7 +22,7 @@ from internals.variable_types.smol_nan import SmolNaN
 from internals.variable_types.smol_variable_type import SmolVariableType
 from internals.stack_types.smol_stack_type import SmolStackType
 from internals.variable_types.smol_variable_creator import SmolVariableCreator
-
+from internals.variable_types.smol_array import SmolArray
 
 class RunMode(Enum):
     Ready = 0,
@@ -51,15 +52,15 @@ class SmolRuntime():
         self.globalEnv:ScopeEnvironment = ScopeEnvironment()
         self.environment:ScopeEnvironment
         self.staticTypes:Dict[str, Any] = {} 
-        #externalMethods:Dict[str, Function] = {} 
+        self.externalMethods:Dict[str, Callable] = {} 
 
-        #classMethodRegEx = RegularExpression("@([A-Za-z]+)[.]([A-Za-z]+)")
+        self.classMethodRegEx = "@([A-Za-z]+)[.]([A-Za-z]+)"
 
         self.program:SmolProgram = Compiler.compile(source)
 
         self.environment = self.globalEnv
 
-        #self.createStdLib()
+        self.createStdLib()
         self.buildJumpTable()
 
         self.runMode = RunMode.Ready
@@ -109,10 +110,10 @@ class SmolRuntime():
     
 
     def createStdLib(self): 
-        pass
+    #    pass
     #    self.staticTypes['Object'] = SmolObject
     #    self.staticTypes['String'] = SmolString
-    #    self.staticTypes['Array'] = SmolArray
+        self.staticTypes["Array"] = SmolArray
     #    self.staticTypes['RegExp'] = SmolRegExp
     
     #def registerMethod(methodName:str, closure:Function):
@@ -224,7 +225,11 @@ class SmolRuntime():
 
             self.pc += 1
 
-            # print (instr)
+            # For debug...
+            #print ("=+=+=+=+=+=+=")
+            #print (self.stack)
+            #print (instr)
+            #print (f"op1: {instr.operand1}, op2: {instr.operand2}")
 
             try:
                 match (instr.opcode):
@@ -250,7 +255,7 @@ class SmolRuntime():
                         # and left the result on the stack, so we don't have anything to do here.
                         if (not isinstance(callData, SmolNativeFunctionResult)):
                             
-                            assert isinstance(callData, SmolFunction)
+                            #assert isinstance(callData, SmolFunction)
 
                             # First create the env for our function
 
@@ -508,21 +513,29 @@ class SmolRuntime():
                         #console.log(self.stack)
 
                         env_in_context = self.environment
-                        
+
+                        # Small hacky variable because Python's match doesn't support break, unlike switch in JS/C#
+                        break_fetch_early = False
+
+
                         # WARNING -- Difference heere between .net and ts versions and I can't remember why .net was changed :(
                         # TODO: Check why the difference and fix...           
                         if (name == "@IndexerGet" or name == "@IndexerSet"):
                         
                             # Special case for square brackets!
+                            indexer_expr_value = self.stack.pop().getValue()
 
-                            name = (self.stack.pop()).getValue().toString()
+                            if (isinstance(indexer_expr_value, float)):
+                                name = int(indexer_expr_value).__str__()
+                            else:
+                                name = indexer_expr_value.__str__() #.toString()
                         
 
                         if (instr.operand2 != None and bool(instr.operand2)):
                     
                             objRef = self.stack.pop()
                             peek_instr = self.program.code_sections[self.code_section][self.pc]
-
+                           
                             if (isinstance(objRef, SmolObject)):
                             
                                 env_in_context = (objRef).object_env
@@ -530,11 +543,10 @@ class SmolRuntime():
                                 if (peek_instr.opcode == OpCode.CALL and bool(peek_instr.operand2)):
                                     self.stack.append(objRef)
                             else:
-                                                            
+                                
                                 if (isinstance(objRef, ISmolNativeCallable)):
-
+                                    
                                     isFuncCall = (peek_instr.opcode == OpCode.CALL and peek_instr.operand2)
-
                                     if (isFuncCall):
                                     
                                         # We need to get some arguments
@@ -546,26 +558,27 @@ class SmolRuntime():
                                         for i in range(int(str(peek_instr.operand1))):
                                             paramValues.append(self.stack.pop())
                                         
-                                        self.stack.append((objRef).nativeCall(name, paramValues))
+                                        self.stack.append(objRef.nativeCall(name, paramValues))
                                         self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
-                                    
-                                    else:
-                                    
-                                        # For now won't work with Setter
+                                        break_fetch_early = True
 
+                                    else:                                    
+                                        # For now won't work with Setter
                                         self.stack.append((objRef).getProp(name))
+                                        break_fetch_early = True
                                     
                                 
                                 elif (isinstance(objRef, SmolNativeFunctionResult)):
-                                                                                                            
-                                    if (self.classMethodRegEx.test(name)):
-                                    
-                                        rexResult = self.classMethodRegEx.exec(name)
 
+                                    if (re.match(self.classMethodRegEx, name) != None):
+                                    
+                                        
+                                        #rexResult = self.classMethodRegEx.exec(name)
+                                        rexResult = re.match(self.classMethodRegEx, name)
                                         #console.log(rexResult)
 
-                                        if (rexResult == None):
-                                            raise RuntimeError("class method name regex failed")
+                                        #if (rexResult == None):
+                                        #    raise RuntimeError("class method name regex failed")
                                         
 
                                         # TODO: Document why this is any and why the first
@@ -591,8 +604,8 @@ class SmolRuntime():
                                         self.stack.pop()
 
                                         # Put our actual object on after calling the ctor:                                            
-                                        r = self.staticTypes[rexResult[1]]["staticCall"](functionName, functionArgs)
-                                        
+                                        r = self.staticTypes[rexResult[1]].staticCall(functionName, functionArgs)
+                                    
                                         if (name == "@Object.constructor"):
                                         
                                             # Hack alert!!!
@@ -605,37 +618,38 @@ class SmolRuntime():
                                         self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
                                         self.stack.append(SmolNativeFunctionResult()) # Pop and Discard following Call will discard this
 
+                                        break_fetch_early = True
                                 else:
                                     raise RuntimeError(f"{objRef} is not a valid target for this call")
-                                
-                        fetchedValue = env_in_context.tryGet(name)
-
-                        #if (isinstance(fetchedValue, SmolFunction)):
-                        #    fetchedValue = fetchedValue as SmolFunction
                         
-                        if (fetchedValue != None):
+                        if (not break_fetch_early):
+                            fetchedValue = env_in_context.tryGet(name)
+
+                            if (isinstance(fetchedValue, SmolFunction)):
+                                assert isinstance(fetchedValue, SmolFunction)
                         
-                            self.stack.append(fetchedValue)
+                            if (fetchedValue != None):
+                                self.stack.append(fetchedValue)
 
-                        else:
-                        
-                            fn = None
-                            for f in self.program.function_table:
-                                if (f.global_function_name == name):
-                                    fn = f
-                                    break
-                            
-                            if (fn != None):
-                                self.stack.append(fn)
-                            
-                            elif (self.externalMethods[name] != None):
-                                peek_instr = self.program.code_sections[self.code_section][self.pc]
-
-                                self.stack.append(self.callExternalMethod(name, peek_instr.operand1))
-
-                                self.stack.append(SmolNativeFunctionResult())
                             else:
-                                self.stack.append(SmolUndefined())
+                            
+                                fn = None
+                                for f in self.program.function_table:
+                                    if (f.global_function_name == name):
+                                        fn = f
+                                        break
+                                
+                                if (fn != None):
+                                    self.stack.append(fn)
+                                
+                                elif (name in self.externalMethods):
+                                    peek_instr = self.program.code_sections[self.code_section][self.pc]
+
+                                    self.stack.append(self.callExternalMethod(name, peek_instr.operand1))
+
+                                    self.stack.append(SmolNativeFunctionResult())
+                                else:
+                                    self.stack.append(SmolUndefined())
 
                     case OpCode.JMPFALSE:
                         
@@ -744,7 +758,7 @@ class SmolRuntime():
 
                         class_name = str(instr.operand1)
 
-                        if (self.staticTypes[class_name] != None):
+                        if (class_name in self.staticTypes):
                             self.stack.append(SmolNativeFunctionResult())
                         else:
                             obj_environment = ScopeEnvironment(self.globalEnv)
