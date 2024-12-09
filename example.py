@@ -1,15 +1,10 @@
 from smol_runtime import SmolRuntime
 
-vm = SmolRuntime.create("var a = []; a.push(123); var b = a[0];")
-print('-----')
-print(vm.program.source)
-print('-----')
-#print(vm.program.decompile())
-vm.run()
-print (f"b = {vm.get_variable("b")}")
-exit(0)
-
-
+print("\n**********************************")
+print("*** SmolScript for Python Demo ***")
+print("**********************************\n")
+print(f"Example Javascript (SmolScript) source code to compile and run:")
+print("----------------------------------------")
 
 example_smolscript_source_code = """
 function demo_func(start, end) { 
@@ -23,11 +18,6 @@ function demo_func(start, end) {
 var some_number = demo_func(-2, 10);
 """
 
-print("\n**********************************")
-print("*** SmolScript for Python Demo ***")
-print("**********************************\n")
-print(f"Example Javascript (SmolScript) source code to compile and run:")
-print("----------------------------------------")
 print(example_smolscript_source_code)
 print("----------------------------------------\n")
 print("Creating...")

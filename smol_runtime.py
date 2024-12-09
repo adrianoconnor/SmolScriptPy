@@ -255,7 +255,7 @@ class SmolRuntime():
                         # and left the result on the stack, so we don't have anything to do here.
                         if (not isinstance(callData, SmolNativeFunctionResult)):
                             
-                            #assert isinstance(callData, SmolFunction)
+                            assert isinstance(callData, SmolFunction)
 
                             # First create the env for our function
 
@@ -334,42 +334,72 @@ class SmolRuntime():
                         left = self.stack.pop()
 
                         if isinstance(left, SmolNumber) and isinstance(right, SmolNumber):
+                            assert isinstance(left, SmolNumber)
+                            assert isinstance(right, SmolNumber)
+     
                             self.stack.append(SmolNumber(left.getValue() - right.getValue()))
                         else:
-                            self.stack.append(SmolNaN());
+                            self.stack.append(SmolNaN())
 
                     case OpCode.MUL:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.append(SmolNumber(left.getValue() * right.getValue()))
+                        if isinstance(left, SmolNumber) and isinstance(right, SmolNumber):
+                            assert isinstance(left, SmolNumber)
+                            assert isinstance(right, SmolNumber)
+                            
+                            self.stack.append(SmolNumber(left.getValue() * right.getValue()))
+                        else:
+                            self.stack.append(SmolNaN())
 
                     case OpCode.DIV:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.append(SmolNumber(left.getValue() / right.getValue()))
+                        if isinstance(left, SmolNumber) and isinstance(right, SmolNumber):
+                            assert isinstance(left, SmolNumber)
+                            assert isinstance(right, SmolNumber)
+                            
+                            self.stack.append(SmolNumber(left.getValue() / right.getValue()))
+                        else:
+                            self.stack.append(SmolNaN())
 
                     case OpCode.REM:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.append(SmolNumber(left.getValue() % right.getValue()))
+                        if isinstance(left, SmolNumber) and isinstance(right, SmolNumber):
+                            assert isinstance(left, SmolNumber)
+                            assert isinstance(right, SmolNumber)
+                            
+                            self.stack.append(SmolNumber(left.getValue() % right.getValue()))
+                        else:
+                            self.stack.append(SmolNaN())
 
                     case OpCode.POW:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
 
-                        self.stack.append(SmolNumber(left.getValue() ** right.getValue()))
+                        if isinstance(left, SmolNumber) and isinstance(right, SmolNumber):
+                            assert isinstance(left, SmolNumber)
+                            assert isinstance(right, SmolNumber)
+                            
+                            self.stack.append(SmolNumber(left.getValue() ** right.getValue()))
+                        else:
+                            self.stack.append(SmolNaN())
 
                     case OpCode.EQL:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
+
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
 
                         self.stack.append(SmolBool(left.equals(right)))
 
@@ -378,12 +408,18 @@ class SmolRuntime():
                         right = self.stack.pop()
                         left = self.stack.pop()
 
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
+
                         self.stack.append(SmolBool(not left.equals(right)))
 
                     case OpCode.GT:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
+                        
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
 
                         self.stack.append(SmolBool(left.getValue() > right.getValue()))
 
@@ -392,12 +428,18 @@ class SmolRuntime():
                         right = self.stack.pop()
                         left = self.stack.pop()
 
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
+
                         self.stack.append(SmolBool(left.getValue() < right.getValue()))
 
                     case OpCode.GTE:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
+
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
 
                         self.stack.append(SmolBool(left.getValue() >= right.getValue()))
 
@@ -406,6 +448,9 @@ class SmolRuntime():
                         right = self.stack.pop()
                         left = self.stack.pop()
 
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
+
                         self.stack.append(SmolBool(left.getValue() <= right.getValue()))
 
                     case OpCode.BITWISE_OR:
@@ -413,12 +458,18 @@ class SmolRuntime():
                         right = self.stack.pop()
                         left = self.stack.pop()
 
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
+
                         self.stack.append(SmolNumber(left.getValue() | right.getValue()))
 
                     case OpCode.BITWISE_AND:
                         
                         right = self.stack.pop()
                         left = self.stack.pop()
+
+                        assert isinstance(left, SmolVariableType)
+                        assert isinstance(right, SmolVariableType)
 
                         self.stack.append(SmolNumber(left.getValue() & right.getValue()))
 
@@ -476,11 +527,14 @@ class SmolRuntime():
                             # Special case for square brackets!
 
                             # Not sure about this cast, might need to add an extra check for type
-
-                            name = (self.stack.pop()).getValue()
+                            indexer_name_variable = self.stack.pop()
+                            assert isinstance(indexer_name_variable, SmolVariableType)
+                            name = indexer_name_variable.getValue()
                         
 
                         value = self.stack.pop() # Hopefully always true...
+                        
+                        assert isinstance(value, SmolVariableType)
                         
                         env_in_context = self.environment
                         isPropertySetter = False
@@ -501,17 +555,14 @@ class SmolRuntime():
                             
                             else:                            
                                 raise RuntimeError(f"$objRef is not a valid target for this call")
-                            
+
+                        assert isinstance(value, SmolVariableType)    
                         env_in_context.assign(name, value, isPropertySetter)                    
 
                     case OpCode.FETCH:
                         
                         # Could be a variable or a function
                         name = str(instr.operand1)
-
-                        #console.log(name)
-                        #console.log(self.stack)
-
                         env_in_context = self.environment
 
                         # Small hacky variable because Python's match doesn't support break, unlike switch in JS/C#
@@ -523,12 +574,14 @@ class SmolRuntime():
                         if (name == "@IndexerGet" or name == "@IndexerSet"):
                         
                             # Special case for square brackets!
-                            indexer_expr_value = self.stack.pop().getValue()
+                            indexer_name_variable = self.stack.pop()
+                            assert isinstance(indexer_name_variable, SmolVariableType)
+                            indexer_name_value = indexer_name_variable.getValue()
 
-                            if (isinstance(indexer_expr_value, float)):
-                                name = int(indexer_expr_value).__str__()
+                            if (isinstance(indexer_name_value, float)):
+                                name = int(indexer_name_value).__str__()
                             else:
-                                name = indexer_expr_value.__str__() #.toString()
+                                name = indexer_name_value.__str__() #.toString()
                         
 
                         if (instr.operand2 != None and bool(instr.operand2)):
@@ -551,14 +604,16 @@ class SmolRuntime():
                                     
                                         # We need to get some arguments
 
-                                        paramValues:list[SmolVariableType] = []
+                                        fetchFuncCallParamValues:list[SmolVariableType] = []
 
                                         assert peek_instr.operand1 != None
 
                                         for i in range(int(str(peek_instr.operand1))):
-                                            paramValues.append(self.stack.pop())
+                                            value_to_push = self.stack.pop()
+                                            assert isinstance(value_to_push, SmolVariableType)
+                                            fetchFuncCallParamValues.append(value_to_push)
                                         
-                                        self.stack.append(objRef.nativeCall(name, paramValues))
+                                        self.stack.append(objRef.nativeCall(name, fetchFuncCallParamValues))
                                         self.stack.append(SmolNativeFunctionResult()) # Call will use this to see that the call is already done.
                                         break_fetch_early = True
 
@@ -571,11 +626,11 @@ class SmolRuntime():
                                 elif (isinstance(objRef, SmolNativeFunctionResult)):
 
                                     if (re.match(self.classMethodRegEx, name) != None):
-                                    
-                                        
-                                        #rexResult = self.classMethodRegEx.exec(name)
+
+                                        print(self.classMethodRegEx)             
+                                        print(name)
                                         rexResult = re.match(self.classMethodRegEx, name)
-                                        #console.log(rexResult)
+                                        print(rexResult.groups())
 
                                         #if (rexResult == None):
                                         #    raise RuntimeError("class method name regex failed")
@@ -583,10 +638,9 @@ class SmolRuntime():
 
                                         # TODO: Document why this is any and why the first
                                         # value is the regex second group match
-                                        # eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         #parameters:any[] = [rexResult[2]]
-
-                                        functionName = str(rexResult[2])
+                                        assert rexResult != None
+                                        functionName = str(rexResult.groups()[1])
 
                                         functionArgs:list[SmolVariableType] = []
 
@@ -595,7 +649,9 @@ class SmolRuntime():
                                             assert peek_instr.operand1 != None
 
                                             for i in range(int(str(peek_instr.operand1))):
-                                                functionArgs.append(self.stack.pop())
+                                                value_to_pass = self.stack.pop()
+                                                assert isinstance(value_to_pass, SmolVariableType)
+                                                functionArgs.append(value_to_pass)
                                             
                                         # Now we've got rid of the params we can get rid
                                         # of the dummy object that create_object left
@@ -604,7 +660,7 @@ class SmolRuntime():
                                         self.stack.pop()
 
                                         # Put our actual object on after calling the ctor:                                            
-                                        r = self.staticTypes[rexResult[1]].staticCall(functionName, functionArgs)
+                                        r = self.staticTypes[rexResult.groups()[0]].staticCall(functionName, functionArgs)
                                     
                                         if (name == "@Object.constructor"):
                                         
@@ -629,6 +685,7 @@ class SmolRuntime():
                                 assert isinstance(fetchedValue, SmolFunction)
                         
                             if (fetchedValue != None):
+                                assert isinstance(fetchedValue, SmolVariableType)               
                                 self.stack.append(fetchedValue)
 
                             else:
@@ -640,12 +697,13 @@ class SmolRuntime():
                                         break
                                 
                                 if (fn != None):
+                                    assert isinstance(fn, SmolStackType)
                                     self.stack.append(fn)
                                 
                                 elif (name in self.externalMethods):
                                     peek_instr = self.program.code_sections[self.code_section][self.pc]
 
-                                    self.stack.append(self.callExternalMethod(name, peek_instr.operand1))
+                                    self.stack.append(self.callExternalMethod(name, int(str(peek_instr.operand1))))
 
                                     self.stack.append(SmolNativeFunctionResult())
                                 else:
@@ -653,17 +711,21 @@ class SmolRuntime():
 
                     case OpCode.JMPFALSE:
                         
-                        value = (self.stack.pop())
-
+                        value = self.stack.pop()
+                        assert isinstance(value, SmolVariableType)
+                        
                         if (value.getValue() == False): # .isFalsey())
+                            assert isinstance(instr.operand1, int) 
                             self.pc = self.jmplocs[instr.operand1]
                         
                     case OpCode.JMPTRUE:
                     
                         #.IsTruthy())
                         value = self.stack.pop()
+                        assert isinstance(value, SmolVariableType)
 
                         if (value.getValue() == True): # .isFalsey())
+                            assert isinstance(instr.operand1, int) 
                             self.pc = self.jmplocs[instr.operand1]
 
                     case OpCode.JMP:
@@ -777,13 +839,14 @@ class SmolRuntime():
                                         fn.param_variable_names
                                     ))                        
 
-                            self.stack.append(SmolObject(obj_environment, class_name))
+                            new_object = SmolObject(obj_environment, class_name)
+                            self.stack.append(new_object)
 
-                            obj_environment.define("this", self.stack.peek())
+                            obj_environment.define("this", new_object)
 
                     case OpCode.DUPLICATE_VALUE:
                     
-                        skip = int(instr.operand1) if instr.operand1 != None else 0
+                        skip = int(str(instr.operand1)) if instr.operand1 != None else 0
 
                         itemToDuplicate = self.stack[self.stack.__len__() - 1 - skip]
 
