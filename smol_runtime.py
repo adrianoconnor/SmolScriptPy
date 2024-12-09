@@ -627,14 +627,10 @@ class SmolRuntime():
 
                                     if (re.match(self.classMethodRegEx, name) != None):
 
-                                        print(self.classMethodRegEx)             
-                                        print(name)
                                         rexResult = re.match(self.classMethodRegEx, name)
-                                        print(rexResult.groups())
 
                                         #if (rexResult == None):
-                                        #    raise RuntimeError("class method name regex failed")
-                                        
+                                        #    raise RuntimeError("class method name regex failed")                                        
 
                                         # TODO: Document why this is any and why the first
                                         # value is the regex second group match
@@ -663,11 +659,9 @@ class SmolRuntime():
                                         r = self.staticTypes[rexResult.groups()[0]].staticCall(functionName, functionArgs)
                                     
                                         if (name == "@Object.constructor"):
-                                        
                                             # Hack alert!!!
-                                            (r).object_env = ScopeEnvironment(self.globalEnv)
+                                            r.object_env = ScopeEnvironment(self.globalEnv)
                                         
-
                                         self.stack.append(r)
 
                                         # And now fill in some fake object refs again:
